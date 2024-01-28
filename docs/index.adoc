@@ -1,0 +1,4 @@
+NF-Plugin-SDK: install/uninstall Nextflow plugins
+
+This is an unofficial tool to install/uninstall Nextflow plugins
+

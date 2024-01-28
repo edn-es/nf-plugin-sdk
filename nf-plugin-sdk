@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "Error: No arguments provided. Please provide at least one command."
+    exit 1
+fi
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        install)
+            if [ $# -ge 3 ]; then
+                type="$2"
+                artifact="$3"
+                echo "Installing $artifact from $type"
+                # Add your install logic here
+                case $type in
+                  maven)
+                    coords=( $(grep -Eo '[^:]+' <<<"$artifact") )
+                    filename="${coords[1]}-${coords[2]}"
+                    path="${coords[0]//[.]//}/${coords[1]//[.]//}/${coords[2]}/${filename}.zip"
+
+                    rm -f "${filename}.zip"
+                    curl -LO "https://repo1.maven.org/maven2/${path}"
+
+                    unzip -uo "${filename}.zip" -d "$HOME/.nextflow/plugins/$filename"
+                    rm -f "${filename}.zip"
+                    ;;
+
+                  github)
+                    coords=( $(grep -Eo '[^:]+' <<<"$artifact") )
+
+                    filename=$(curl -s "https://api.github.com/repos/${coords[0]}/${coords[1]}/releases" \
+                      | jq -r --arg jq_artifact ${coords[2]} \
+                        '( .[] | select(.tag_name==($jq_artifact)) | .assets | .[] | select(.browser_download_url | endswith(".zip")) | .name)' \
+                    )
+                    filename=${filename::-4}
+
+                    url=$(curl -s "https://api.github.com/repos/${coords[0]}/${coords[1]}/releases" \
+                      | jq -r --arg jq_artifact ${coords[2]} \
+                        '( .[] | select(.tag_name==($jq_artifact)) | .assets | .[] | select(.browser_download_url | endswith(".zip")) | .browser_download_url)')
+
+                    rm -f "${filename}.zip"
+                    curl -LO $url
+
+                    unzip -uo "${filename}.zip" -d "$HOME/.nextflow/plugins/$filename"
+                    rm -f "${filename}.zip"
+                    ;;
+                esac
+                shift 3
+            else
+                echo "Error: 'install' command requires 'repo' and 'artifact' arguments."
+                exit 1
+            fi
+            ;;
+        uninstall)
+            if [ $# -ge 3 ]; then
+                artifact="$2"
+                echo "Uninstalling $artifact"
+                # Add your uninstall logic here
+                shift 2
+            else
+                echo "Error: 'uninstall' command requires 'artifact' argument."
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Error: Unknown command '$1'"
+            exit 1
+            ;;
+    esac
+    shift
+done
