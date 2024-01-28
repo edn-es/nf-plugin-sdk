@@ -1,4 +1,25 @@
-NF-Plugin-SDK: install/uninstall Nextflow plugins
+= NF-Plugin-SDK
+install/uninstall Nextflow plugins
+Jorge Aguilera <jagedn@gmail.com>
 
 This is an unofficial tool to install/uninstall Nextflow plugins
 
+Currently, Nextflow uses a "fixed" GitHub repository as "source of truth" for Plugins
+links and versions
+
+This is great, because you can trust official plugins are verified, but sometimes it's
+a pain when you want to use yours (or unofficial) plugins
+
+The idea of `nf-plugin-sdk` is to have a simple bash to install plugins from GitHub or
+Maven using their coordinates, i.e.:
+
+`./nf-plugin-sdk install github edn-es:nf-plugin-template:v0.0.8-rc1`
+
+or
+
+`./nf-plugin-sdk install maven es.edn:nf-plugin-template:0.0.8-rc1`
+
+This bash will resolve the URL to the zip and download into the $HOME/.nextflow/plugin folder
+
+TIP:: Right now there is no Nextflow plugins published in Maven except `nf-plugin-template`, instead GitHub releases are used but we believe Maven repository
+can be a great alternative
